@@ -1,1 +1,18 @@
 @DeviceHub.Api_HostAddress = http://localhost:5164
+### Opprett et headset
+POST {{DeviceHub.Api_HostAddress}}/api/headsets
+Content-Type: application/json
+
+{
+  "name": "Quest 3 #1",
+  "serialNumber": "Q3-0001"
+}
+
+### Hent alle
+GET {{DeviceHub.Api_HostAddress}}/api/headsets
+
+### Hent ett
+GET {{DeviceHub.Api_HostAddress}}/api/headsets/1
+
+### Hent et som ikke finnes
+GET {{DeviceHub.Api_HostAddress}}/api/headsets/999

@@ -1,6 +1,1 @@
 @DeviceHub.Api_HostAddress = http://localhost:5164
-
-
-Accept: application/json
-
-###

@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: devicehub
+      POSTGRES_PASSWORD: devpassord
+      POSTGRES_DB: devicehub
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+volumes:
+  dbdata:

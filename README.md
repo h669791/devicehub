@@ -12,7 +12,11 @@ The goal is a small but realistic web backend: a REST API, a relational database
 | --- | --- | --- |
 | `GET` | `/api/headsets` | Lists all headsets |
 | `GET` | `/api/headsets/{id}` | Gets one headset, or `404 Not Found` |
-| `POST` | `/api/headsets` | Registers a headset and returns `201 Created` with a `Location` header |
+| `POST` | `/api/headsets` | Registers a headset and returns `201 Created` with a `Location` header, or `409 Conflict` if the serial number is taken |
+| `PUT` | `/api/headsets/{id}` | Updates name and serial number: `204 No Content`, `404 Not Found` or `409 Conflict` |
+| `DELETE` | `/api/headsets/{id}` | Deletes a headset: `204 No Content` or `404 Not Found` |
+
+Invalid input, such as an empty or too long name or serial number, returns `400 Bad Request`. Error responses (400, 404, 409) use the Problem Details format (RFC 9457).
 
 Register a headset:
 
@@ -42,7 +46,7 @@ Response:
 ## Design decisions
 
 - **DTOs separate the API from the database.** Clients only send a name and a serial number. Id, status, battery level and last-seen time are owned by the server.
-- **Serial numbers are unique in the database**, enforced by a unique index.
+- **Serial numbers are unique, checked twice.** The API checks before saving and returns `409 Conflict`. A unique index in the database is the safety net for concurrent requests, and a violation of it is also returned as `409`, not `500`.
 - **Status is a string, not a number**, both in the JSON and in the database. The data stays readable, and reordering the enum can't silently change stored values.
 - **PostgreSQL naming conventions.** Tables and columns use snake_case.
 - **No secrets in the repository.** The connection string is read from configuration, set locally with user secrets.
@@ -53,27 +57,27 @@ Requires the .NET 10 SDK, Docker and the EF Core tools (`dotnet tool install --g
 
 1. Start PostgreSQL:
 
-   ```bash
+```bash
    docker compose -f DeviceHub.Api/docker-compose.yml up -d
-   ```
+```
 
 2. Set the connection string (matches the development database in `docker-compose.yml`):
 
-   ```bash
+```bash
    dotnet user-secrets set "ConnectionStrings:DeviceHub" "Host=localhost;Port=5432;Database=devicehub;Username=devicehub;Password=devpassord" --project DeviceHub.Api
-   ```
+```
 
 3. Create the database schema:
 
-   ```bash
+```bash
    dotnet ef database update --project DeviceHub.Api
-   ```
+```
 
 4. Run the API:
 
-   ```bash
+```bash
    dotnet run --project DeviceHub.Api
-   ```
+```
 
 The API runs on http://localhost:5164. Example requests are in `DeviceHub.Api/DeviceHub.Api.http`, and the OpenAPI document is at `/openapi/v1.json` in development.
 
@@ -83,7 +87,7 @@ The API runs on http://localhost:5164. Example requests are in `DeviceHub.Api/De
 DeviceHub.Api/
   Controllers/   HeadsetsController
   Data/          AppDbContext (EF Core)
-  Dtos/          API contracts: HeadsetDto, CreateHeadsetDto
+  Dtos/          API contracts: HeadsetDto, CreateHeadsetDto, UpdateHeadsetDto
   Models/        Headset entity and HeadsetStatus
   Migrations/    EF Core migrations
   docker-compose.yml   PostgreSQL for development
@@ -91,8 +95,8 @@ DeviceHub.Api/
 
 ## Roadmap
 
-- [ ] Update and delete endpoints
-- [ ] `409 Conflict` when a serial number is already registered
+- [x] Update and delete endpoints
+- [x] `409 Conflict` when a serial number is already registered
 - [ ] Sessions and experiences with business rules (e.g. a headset must be online to start a session)
 - [ ] Live status updates with SignalR and a React/TypeScript frontend
 - [ ] xUnit tests and CI with GitHub Actions

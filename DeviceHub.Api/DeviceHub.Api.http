@@ -74,8 +74,3 @@ DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/{{createB.response.body.$.id}}
 ### Hent et som ikke finnes (forventer 404)
 GET {{DeviceHub.Api_HostAddress}}/api/headsets/999
 
-### Midlertidig: rydd opp
-DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/5
-
-### Midlertidig: rydd opp
-DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/6

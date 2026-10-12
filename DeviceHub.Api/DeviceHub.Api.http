@@ -1,18 +1,81 @@
 @DeviceHub.Api_HostAddress = http://localhost:5164
-### Opprett et headset
-POST {{DeviceHub.Api_HostAddress}}/api/headsets
-Content-Type: application/json
-
-{
-  "name": "Quest 3 #1",
-  "serialNumber": "Q3-0001"
-}
 
 ### Hent alle
 GET {{DeviceHub.Api_HostAddress}}/api/headsets
 
-### Hent ett
-GET {{DeviceHub.Api_HostAddress}}/api/headsets/1
+### 1. Opprett headset A (forventer 201)
+# @name createA
+POST {{DeviceHub.Api_HostAddress}}/api/headsets
+Content-Type: application/json
 
-### Hent et som ikke finnes
+{
+  "name": "Test A",
+  "serialNumber": "TEST-A"
+}
+
+### 2. Opprett headset B (forventer 201)
+# @name createB
+POST {{DeviceHub.Api_HostAddress}}/api/headsets
+Content-Type: application/json
+
+{
+  "name": "Test B",
+  "serialNumber": "TEST-B"
+}
+
+### 3. Duplikat serienummer ved opprett (forventer 409)
+POST {{DeviceHub.Api_HostAddress}}/api/headsets
+Content-Type: application/json
+
+{
+  "name": "Kopi av A",
+  "serialNumber": "TEST-A"
+}
+
+### 4. Oppdater A: nytt navn, samme serienummer (forventer 204)
+PUT {{DeviceHub.Api_HostAddress}}/api/headsets/{{createA.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "Test A (oppdatert)",
+  "serialNumber": "TEST-A"
+}
+
+### 5. Gi B serienummeret til A (forventer 409)
+PUT {{DeviceHub.Api_HostAddress}}/api/headsets/{{createB.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "Test B",
+  "serialNumber": "TEST-A"
+}
+
+### 6. Tomt navn (forventer 400)
+PUT {{DeviceHub.Api_HostAddress}}/api/headsets/{{createA.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "name": "",
+  "serialNumber": "TEST-A"
+}
+
+### 7. Hent A (forventer 200 med nytt navn)
+GET {{DeviceHub.Api_HostAddress}}/api/headsets/{{createA.response.body.$.id}}
+
+### 8. Slett A (forventer 204)
+DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/{{createA.response.body.$.id}}
+
+### 9. Slett A en gang til (forventer 404)
+DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/{{createA.response.body.$.id}}
+
+### 10. Rydd opp: slett B (forventer 204)
+DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/{{createB.response.body.$.id}}
+
+### Hent et som ikke finnes (forventer 404)
 GET {{DeviceHub.Api_HostAddress}}/api/headsets/999
+
+### Midlertidig: rydd opp
+DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/5
+
+### Midlertidig: rydd opp
+DELETE {{DeviceHub.Api_HostAddress}}/api/headsets/6
